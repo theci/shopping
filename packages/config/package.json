@@ -1,0 +1,8 @@
+{
+  "name": "@repo/config",
+  "version": "1.0.0",
+  "main": "eslint-config.js",
+  "files": [
+    "eslint-config.js"
+  ]
+}
