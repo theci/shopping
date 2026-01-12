@@ -2,17 +2,20 @@ FROM gradle:8.5-jdk21-alpine AS build
 
 WORKDIR /app
 
-# Copy gradle files
+# Copy gradle wrapper files
+COPY gradlew ./
+COPY gradle ./gradle
 COPY build.gradle settings.gradle ./
 
 # Download dependencies (cache layer)
-RUN gradle dependencies --no-daemon --quiet || true
+RUN ./gradlew dependencies --no-daemon --quiet || true
 
 # Copy source code
 COPY src ./src
 
-# Build application
-RUN gradle bootJar --no-daemon
+# Build application (compileJava generates QueryDSL Q-classes)
+RUN ./gradlew clean compileJava --no-daemon && \
+    ./gradlew bootJar --no-daemon -x test
 
 # Production stage
 FROM eclipse-temurin:21-jre-alpine
