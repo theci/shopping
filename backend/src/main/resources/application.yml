@@ -46,3 +46,9 @@ logging:
     com.ecommerce: DEBUG
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+# JWT 설정
+jwt:
+  secret: dGhpc2lzYXZlcnlsb25nc2VjcmV0a2V5Zm9yand0dG9rZW5nZW5lcmF0aW9uYW5kdmFsaWRhdGlvbjEyMzQ1Njc4OTA=
+  access-token-validity: 3600000    # 1시간 (밀리초)
+  refresh-token-validity: 604800000 # 7일 (밀리초)
