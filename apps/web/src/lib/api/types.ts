@@ -14,6 +14,7 @@ export interface ApiResponse<T> {
 export interface PageResponse<T> {
   content: T[];
   page: number;
+  pageNumber: number;  // alias for page (Spring Data compatibility)
   size: number;
   totalElements: number;
   totalPages: number;

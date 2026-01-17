@@ -6,3 +6,4 @@ export * from './Spinner';
 export * from './Skeleton';
 export * from './Modal';
 export * from './Toast';
+export * from './Pagination';
