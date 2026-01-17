@@ -27,6 +27,10 @@ public class ProductCreateRequest {
     @Digits(integer = 10, fraction = 2, message = "가격 형식이 올바르지 않습니다")
     private BigDecimal price;
 
+    @DecimalMin(value = "0.0", inclusive = false, message = "할인가는 0보다 커야 합니다")
+    @Digits(integer = 10, fraction = 2, message = "할인가 형식이 올바르지 않습니다")
+    private BigDecimal discountPrice;
+
     @NotNull(message = "재고 수량은 필수입니다")
     @Min(value = 0, message = "재고 수량은 0 이상이어야 합니다")
     private Integer stockQuantity;

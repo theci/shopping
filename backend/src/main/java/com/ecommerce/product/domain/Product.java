@@ -11,6 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -44,6 +46,17 @@ public class Product extends AggregateRoot {
     private ProductStatus status;
 
     private String brand;
+
+    @Column(precision = 10, scale = 2)
+    private BigDecimal discountPrice;
+
+    @Column(nullable = false)
+    private Integer viewCount = 0;
+
+    @Column(nullable = false)
+    private Integer salesCount = 0;
+
+    private LocalDateTime publishedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
@@ -88,6 +101,7 @@ public class Product extends AggregateRoot {
         }
 
         this.status = ProductStatus.ACTIVE;
+        this.publishedAt = LocalDateTime.now();
         if (this.getId() != null) {
             addDomainEvent(new ProductPublishedEvent(this.getId()));
         }
@@ -205,6 +219,59 @@ public class Product extends AggregateRoot {
      */
     public boolean isAvailable() {
         return this.status == ProductStatus.ACTIVE && this.stockQuantity > 0;
+    }
+
+    /**
+     * 할인율 계산
+     */
+    public BigDecimal getDiscountRate() {
+        if (this.discountPrice == null || this.discountPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        if (this.price.compareTo(BigDecimal.ZERO) <= 0) {
+            return BigDecimal.ZERO;
+        }
+        return this.price.subtract(this.discountPrice)
+                .divide(this.price, 4, RoundingMode.HALF_UP)
+                .multiply(BigDecimal.valueOf(100))
+                .setScale(1, RoundingMode.HALF_UP);
+    }
+
+    /**
+     * 실제 판매가 (할인가가 있으면 할인가, 없으면 정가)
+     */
+    public BigDecimal getEffectivePrice() {
+        if (this.discountPrice != null && this.discountPrice.compareTo(BigDecimal.ZERO) > 0) {
+            return this.discountPrice;
+        }
+        return this.price;
+    }
+
+    /**
+     * 할인가 설정
+     */
+    public void setDiscountPrice(BigDecimal discountPrice) {
+        if (discountPrice != null && discountPrice.compareTo(this.price) >= 0) {
+            throw new IllegalArgumentException("할인가는 정가보다 작아야 합니다");
+        }
+        this.discountPrice = discountPrice;
+    }
+
+    /**
+     * 조회수 증가
+     */
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+    /**
+     * 판매량 증가
+     */
+    public void incrementSalesCount(int quantity) {
+        if (quantity <= 0) {
+            throw new IllegalArgumentException("판매 수량은 0보다 커야 합니다");
+        }
+        this.salesCount += quantity;
     }
 
     // Validation

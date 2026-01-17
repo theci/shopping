@@ -49,6 +49,16 @@ public class ProductController {
     }
 
     /**
+     * 상품 검색 (키워드 필수)
+     */
+    @GetMapping("/search")
+    public ApiResponse<PageResponse<ProductResponse>> searchProducts(
+            @ModelAttribute ProductSearchRequest searchRequest) {
+        PageResponse<ProductResponse> response = productService.searchProducts(searchRequest);
+        return ApiResponse.success(response);
+    }
+
+    /**
      * 상품 수정
      */
     @PutMapping("/{id}")

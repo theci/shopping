@@ -23,9 +23,13 @@ public class ProductMapper {
                 .name(product.getName())
                 .description(product.getDescription())
                 .price(product.getPrice())
+                .discountPrice(product.getDiscountPrice())
+                .discountRate(product.getDiscountRate())
                 .stockQuantity(product.getStockQuantity())
                 .status(product.getStatus())
                 .brand(product.getBrand())
+                .viewCount(product.getViewCount())
+                .salesCount(product.getSalesCount())
                 .category(toNestedCategoryResponse(product.getCategory()))
                 .images(product.getImages().stream()
                         .map(this::toImageResponse)
@@ -35,6 +39,7 @@ public class ProductMapper {
                         .collect(Collectors.toList()))
                 .createdAt(product.getCreatedAt())
                 .updatedAt(product.getUpdatedAt())
+                .publishedAt(product.getPublishedAt())
                 .build();
     }
 

@@ -5,6 +5,7 @@ import com.ecommerce.product.domain.CategoryRepository;
 import com.ecommerce.product.domain.Product;
 import com.ecommerce.product.domain.ProductRepository;
 import com.ecommerce.product.domain.event.ProductCreatedEvent;
+import com.ecommerce.product.infrastructure.persistence.ProductQuerydslRepository;
 import com.ecommerce.product.dto.ProductCreateRequest;
 import com.ecommerce.product.dto.ProductResponse;
 import com.ecommerce.product.dto.ProductSearchRequest;
@@ -34,6 +35,7 @@ public class ProductService {
 
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
+    private final ProductQuerydslRepository productQuerydslRepository;
     private final ProductMapper productMapper;
     private final DomainEventPublisher eventPublisher;
 
@@ -56,6 +58,11 @@ public class ProductService {
                 request.getBrand(),
                 category
         );
+
+        // 할인가 설정
+        if (request.getDiscountPrice() != null) {
+            product.setDiscountPrice(request.getDiscountPrice());
+        }
 
         Product savedProduct = productRepository.save(product);
 
@@ -92,26 +99,12 @@ public class ProductService {
     }
 
     /**
-     * 상품 검색
+     * 상품 검색 (고급 필터링 지원)
      */
     public PageResponse<ProductResponse> searchProducts(ProductSearchRequest searchRequest) {
         Pageable pageable = createPageable(searchRequest);
 
-        Page<Product> productPage;
-
-        if (searchRequest.getKeyword() != null && !searchRequest.getKeyword().isBlank()) {
-            productPage = productRepository.findByNameContaining(
-                    searchRequest.getKeyword(), pageable);
-        } else if (searchRequest.getStatus() != null) {
-            productPage = productRepository.findByStatus(
-                    searchRequest.getStatus(), pageable);
-        } else if (searchRequest.getCategoryId() != null) {
-            Category category = categoryRepository.findById(searchRequest.getCategoryId())
-                    .orElseThrow(() -> new CategoryNotFoundException(searchRequest.getCategoryId()));
-            productPage = productRepository.findByCategory(category, pageable);
-        } else {
-            productPage = productRepository.findAll(pageable);
-        }
+        Page<Product> productPage = productQuerydslRepository.searchProducts(searchRequest, pageable);
 
         Page<ProductResponse> responsePage = productPage.map(productMapper::toResponse);
 
@@ -139,6 +132,11 @@ public class ProductService {
                 request.getBrand(),
                 category
         );
+
+        // 할인가 설정
+        if (request.getDiscountPrice() != null) {
+            product.setDiscountPrice(request.getDiscountPrice());
+        }
 
         Product savedProduct = productRepository.save(product);
 

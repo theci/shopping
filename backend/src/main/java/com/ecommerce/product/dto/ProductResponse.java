@@ -23,14 +23,19 @@ public class ProductResponse {
     private String name;
     private String description;
     private BigDecimal price;
+    private BigDecimal discountPrice;
+    private BigDecimal discountRate;
     private Integer stockQuantity;
     private ProductStatus status;
     private String brand;
+    private Integer viewCount;
+    private Integer salesCount;
     private CategoryResponse category;
     private List<ProductImageResponse> images;
     private List<ProductOptionResponse> options;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
+    private LocalDateTime publishedAt;
 
     @Getter
     @NoArgsConstructor

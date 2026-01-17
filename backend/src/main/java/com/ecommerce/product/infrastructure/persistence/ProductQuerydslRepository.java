@@ -2,6 +2,8 @@ package com.ecommerce.product.infrastructure.persistence;
 
 import com.ecommerce.product.domain.Product;
 import com.ecommerce.product.domain.ProductStatus;
+import com.ecommerce.product.dto.ProductSearchRequest;
+import com.querydsl.core.types.OrderSpecifier;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.impl.JPAQueryFactory;
 import lombok.RequiredArgsConstructor;
@@ -10,6 +12,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 import static com.ecommerce.product.domain.QProduct.product;
@@ -50,6 +53,43 @@ public class ProductQuerydslRepository {
                         statusEq(status),
                         categoryIdEq(categoryId),
                         keywordContains(keyword)
+                )
+                .fetchOne();
+
+        return new PageImpl<>(products, pageable, total != null ? total : 0L);
+    }
+
+    /**
+     * 고급 동적 검색 쿼리
+     * 상태, 카테고리, 키워드, 가격 범위, 브랜드를 조합한 검색
+     */
+    public Page<Product> searchProducts(ProductSearchRequest request, Pageable pageable) {
+        List<Product> products = queryFactory
+                .selectFrom(product)
+                .leftJoin(product.category, category).fetchJoin()
+                .where(
+                        statusEq(request.getStatus()),
+                        categoryIdEq(request.getCategoryId()),
+                        keywordContains(request.getKeyword()),
+                        brandEq(request.getBrand()),
+                        priceGoe(request.getMinPrice()),
+                        priceLoe(request.getMaxPrice())
+                )
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .orderBy(getOrderSpecifier(request.getSort(), request.getDirection()))
+                .fetch();
+
+        Long total = queryFactory
+                .select(product.count())
+                .from(product)
+                .where(
+                        statusEq(request.getStatus()),
+                        categoryIdEq(request.getCategoryId()),
+                        keywordContains(request.getKeyword()),
+                        brandEq(request.getBrand()),
+                        priceGoe(request.getMinPrice()),
+                        priceLoe(request.getMaxPrice())
                 )
                 .fetchOne();
 
@@ -106,6 +146,35 @@ public class ProductQuerydslRepository {
     private BooleanExpression keywordContains(String keyword) {
         return keyword != null && !keyword.isBlank()
                 ? product.name.containsIgnoreCase(keyword)
+                    .or(product.description.containsIgnoreCase(keyword))
+                    .or(product.brand.containsIgnoreCase(keyword))
                 : null;
+    }
+
+    private BooleanExpression brandEq(String brand) {
+        return brand != null && !brand.isBlank()
+                ? product.brand.equalsIgnoreCase(brand)
+                : null;
+    }
+
+    private BooleanExpression priceGoe(BigDecimal minPrice) {
+        return minPrice != null ? product.price.goe(minPrice) : null;
+    }
+
+    private BooleanExpression priceLoe(BigDecimal maxPrice) {
+        return maxPrice != null ? product.price.loe(maxPrice) : null;
+    }
+
+    private OrderSpecifier<?> getOrderSpecifier(String sort, String direction) {
+        boolean isDesc = "DESC".equalsIgnoreCase(direction);
+
+        return switch (sort) {
+            case "price" -> isDesc ? product.price.desc() : product.price.asc();
+            case "name" -> isDesc ? product.name.desc() : product.name.asc();
+            case "salesCount" -> isDesc ? product.salesCount.desc() : product.salesCount.asc();
+            case "viewCount" -> isDesc ? product.viewCount.desc() : product.viewCount.asc();
+            case "stockQuantity" -> isDesc ? product.stockQuantity.desc() : product.stockQuantity.asc();
+            default -> isDesc ? product.createdAt.desc() : product.createdAt.asc();
+        };
     }
 }
