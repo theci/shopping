@@ -3,8 +3,9 @@
 import { use, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { ChevronRight, Heart } from 'lucide-react';
+import { ChevronRight, Minus, Plus } from 'lucide-react';
 import { ProductDetail, useProduct } from '@/features/product';
+import { useAddToCart } from '@/features/cart/hooks';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { Button } from '@/shared/components/ui';
 import { useToast } from '@/shared/hooks';
@@ -21,26 +22,20 @@ export default function ProductPage({ params }: ProductPageProps) {
   const { isAuthenticated } = useAuthStore();
 
   const { data: product, isLoading, error } = useProduct(productId);
-  const [isAddingToCart, setIsAddingToCart] = useState(false);
+  const { addToCart, isPending: isAddingToCart } = useAddToCart();
   const [quantity, setQuantity] = useState(1);
 
-  const handleAddToCart = async () => {
-    if (!isAuthenticated) {
-      showToast({ type: 'info', message: '로그인이 필요합니다.' });
-      router.push(`/login?redirect=/products/${productId}`);
-      return;
-    }
+  const handleAddToCart = () => {
+    if (!product) return;
 
-    setIsAddingToCart(true);
-    try {
-      // TODO: 장바구니 API 연동 (Phase 1 Step 4)
-      // await cartApi.addItem({ productId, quantity });
-      showToast({ type: 'success', message: '장바구니에 추가되었습니다.' });
-    } catch (err) {
-      showToast({ type: 'error', message: '장바구니 추가에 실패했습니다.' });
-    } finally {
-      setIsAddingToCart(false);
-    }
+    addToCart({
+      productId: product.id,
+      productName: product.name,
+      productImage: product.images?.[0]?.imageUrl,
+      price: product.discountPrice || product.price,
+      quantity,
+      stockQuantity: product.stockQuantity,
+    });
   };
 
   const handleBuyNow = () => {
@@ -108,27 +103,30 @@ export default function ProductPage({ params }: ProductPageProps) {
         />
       )}
 
-      {/* 수량 선택 (옵션) */}
+      {/* 모바일 하단 고정 버튼 */}
       {product && !isLoading && (
-        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden">
-          <div className="container mx-auto flex items-center gap-4">
+        <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 p-4 lg:hidden z-30">
+          <div className="container mx-auto flex items-center gap-3">
+            {/* 수량 조절 */}
             <div className="flex items-center border border-gray-300 rounded-lg">
               <button
                 onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                className="px-3 py-2 text-gray-600 hover:bg-gray-50"
+                className="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                 disabled={quantity <= 1}
               >
-                -
+                <Minus className="w-4 h-4" />
               </button>
-              <span className="px-4 py-2 min-w-[50px] text-center">{quantity}</span>
+              <span className="px-3 py-2 min-w-[40px] text-center font-medium">{quantity}</span>
               <button
                 onClick={() => setQuantity(quantity + 1)}
-                className="px-3 py-2 text-gray-600 hover:bg-gray-50"
+                className="px-3 py-2 text-gray-600 hover:bg-gray-50 disabled:opacity-50"
                 disabled={product.stockQuantity !== undefined && quantity >= product.stockQuantity}
               >
-                +
+                <Plus className="w-4 h-4" />
               </button>
             </div>
+
+            {/* 장바구니 버튼 */}
             <Button
               variant="outline"
               className="flex-1"
@@ -138,6 +136,8 @@ export default function ProductPage({ params }: ProductPageProps) {
             >
               장바구니
             </Button>
+
+            {/* 바로구매 버튼 */}
             <Button
               className="flex-1"
               onClick={handleBuyNow}
@@ -147,6 +147,11 @@ export default function ProductPage({ params }: ProductPageProps) {
             </Button>
           </div>
         </div>
+      )}
+
+      {/* 모바일 하단 버튼 영역 확보 */}
+      {product && !isLoading && (
+        <div className="h-20 lg:hidden" />
       )}
     </div>
   );

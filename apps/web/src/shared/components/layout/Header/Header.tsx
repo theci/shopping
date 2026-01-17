@@ -1,12 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, User, Search, Menu, X, LogOut } from 'lucide-react';
+import { User, Search, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../ui/Button';
 import { cn } from '@/shared/utils/cn';
 import { useAuthStore } from '@/features/auth/store/authStore';
 import { useLogout } from '@/features/auth/hooks/useLogout';
+import { CartButton } from '@/features/cart/components/CartButton';
 
 interface HeaderProps {
   className?: string;
@@ -55,11 +56,7 @@ export function Header({ className }: HeaderProps) {
             </Button>
 
             {/* 장바구니 */}
-            <Link href="/cart">
-              <Button variant="ghost" size="icon" className="relative">
-                <ShoppingCart className="w-5 h-5" />
-              </Button>
-            </Link>
+            <CartButton />
 
             {/* 사용자 메뉴 */}
             {isAuthenticated ? (
