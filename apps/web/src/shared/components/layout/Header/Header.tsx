@@ -1,10 +1,12 @@
 'use client';
 
 import Link from 'next/link';
-import { ShoppingCart, User, Search, Menu, X } from 'lucide-react';
+import { ShoppingCart, User, Search, Menu, X, LogOut } from 'lucide-react';
 import { useState } from 'react';
 import { Button } from '../../ui/Button';
 import { cn } from '@/shared/utils/cn';
+import { useAuthStore } from '@/features/auth/store/authStore';
+import { useLogout } from '@/features/auth/hooks/useLogout';
 
 interface HeaderProps {
   className?: string;
@@ -13,6 +15,10 @@ interface HeaderProps {
 export function Header({ className }: HeaderProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const { isAuthenticated, customer } = useAuthStore();
+  const { logout } = useLogout();
 
   return (
     <header className={cn('sticky top-0 z-40 bg-white border-b border-gray-200', className)}>
@@ -52,19 +58,65 @@ export function Header({ className }: HeaderProps) {
             <Link href="/cart">
               <Button variant="ghost" size="icon" className="relative">
                 <ShoppingCart className="w-5 h-5" />
-                {/* 장바구니 뱃지 - 상태 연동 시 조건부 렌더링 */}
-                {/* <span className="absolute -top-1 -right-1 bg-primary-600 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                  3
-                </span> */}
               </Button>
             </Link>
 
-            {/* 마이페이지 */}
-            <Link href="/mypage">
-              <Button variant="ghost" size="icon">
-                <User className="w-5 h-5" />
-              </Button>
-            </Link>
+            {/* 사용자 메뉴 */}
+            {isAuthenticated ? (
+              <div className="relative">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+                >
+                  <User className="w-5 h-5" />
+                </Button>
+                {isUserMenuOpen && (
+                  <>
+                    <div
+                      className="fixed inset-0 z-10"
+                      onClick={() => setIsUserMenuOpen(false)}
+                    />
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-2 z-20">
+                      <div className="px-4 py-2 border-b border-gray-100">
+                        <p className="text-sm font-medium text-gray-900">{customer?.name}</p>
+                        <p className="text-xs text-gray-500">{customer?.email}</p>
+                      </div>
+                      <Link
+                        href="/mypage"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        마이페이지
+                      </Link>
+                      <Link
+                        href="/mypage/orders"
+                        className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                        onClick={() => setIsUserMenuOpen(false)}
+                      >
+                        주문 내역
+                      </Link>
+                      <button
+                        onClick={() => {
+                          setIsUserMenuOpen(false);
+                          logout();
+                        }}
+                        className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-gray-50 flex items-center gap-2"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        로그아웃
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="ghost" size="sm">
+                  로그인
+                </Button>
+              </Link>
+            )}
 
             {/* 모바일 메뉴 버튼 */}
             <Button
