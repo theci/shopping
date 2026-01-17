@@ -3,14 +3,15 @@ FROM node:20-alpine AS base
 # Install pnpm
 RUN corepack enable && corepack prepare pnpm@9.0.0 --activate
 
-# Stage 1: Install dependencies
-FROM base AS dependencies
+# Stage 1: Install dependencies and build
+FROM base AS builder
 WORKDIR /app
 
 # Copy workspace configuration
 COPY pnpm-workspace.yaml ./
 COPY package.json ./
 COPY pnpm-lock.yaml ./
+COPY .npmrc ./
 
 # Copy package.json files
 COPY apps/web/package.json ./apps/web/
@@ -21,18 +22,7 @@ COPY packages/config/package.json ./packages/config/
 # Install dependencies
 RUN pnpm install --frozen-lockfile
 
-# Stage 2: Build application
-FROM base AS builder
-WORKDIR /app
-
-# Copy dependencies
-COPY --from=dependencies /app/node_modules ./node_modules
-COPY --from=dependencies /app/apps/web/node_modules ./apps/web/node_modules
-COPY --from=dependencies /app/packages ./packages
-
 # Copy source code
-COPY pnpm-workspace.yaml ./
-COPY package.json ./
 COPY turbo.json ./
 COPY tsconfig.json ./
 COPY apps/web ./apps/web
@@ -41,7 +31,7 @@ COPY packages ./packages
 # Build
 RUN pnpm --filter web build
 
-# Stage 3: Production image
+# Stage 2: Production image
 FROM base AS runner
 WORKDIR /app
 
@@ -51,9 +41,14 @@ ENV NEXT_PUBLIC_API_URL=http://backend:8080
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
-COPY --from=builder /app/apps/web/public ./apps/web/public
+# Copy standalone build preserving symlinks
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/standalone ./
+
+# Copy static files
 COPY --from=builder --chown=nextjs:nodejs /app/apps/web/.next/static ./apps/web/.next/static
+
+# Copy public folder
+COPY --from=builder --chown=nextjs:nodejs /app/apps/web/public ./apps/web/public
 
 USER nextjs
 
