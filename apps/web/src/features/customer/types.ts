@@ -1,7 +1,8 @@
 /**
- * 고객 상태
+ * Customer Feature Types
  */
-export type CustomerStatus = 'ACTIVE' | 'INACTIVE' | 'WITHDRAWN';
+
+export type { ApiResponse } from '@/lib/api/types';
 
 /**
  * 고객 정보
@@ -12,24 +13,11 @@ export interface Customer {
   name: string;
   phoneNumber?: string;
   phone?: string; // alias for phoneNumber (API compatibility)
-  status?: CustomerStatus;
   birthDate?: string;
   gender?: 'MALE' | 'FEMALE' | 'OTHER';
+  status?: 'ACTIVE' | 'INACTIVE' | 'WITHDRAWN';
   createdAt: string;
   updatedAt?: string;
-}
-
-/**
- * 배송지 정보
- */
-export interface Address {
-  id: number;
-  recipientName: string;
-  phoneNumber: string;
-  zipCode: string;
-  address: string;
-  addressDetail?: string;
-  isDefault: boolean;
 }
 
 /**
@@ -37,7 +25,9 @@ export interface Address {
  */
 export interface UpdateProfileRequest {
   name?: string;
-  phoneNumber?: string;
+  phone?: string;
+  birthDate?: string;
+  gender?: 'MALE' | 'FEMALE' | 'OTHER';
 }
 
 /**
@@ -50,13 +40,38 @@ export interface PasswordChangeRequest {
 }
 
 /**
- * 배송지 생성/수정 요청
+ * 배송지
+ */
+export interface Address {
+  id: number;
+  name: string;
+  recipientName: string;
+  phone: string;
+  zipCode: string;
+  address: string;
+  addressDetail?: string;
+  isDefault: boolean;
+  createdAt: string;
+  updatedAt?: string;
+}
+
+/**
+ * 배송지 추가/수정 요청
  */
 export interface AddressRequest {
+  name: string;
   recipientName: string;
-  phoneNumber: string;
+  phone: string;
   zipCode: string;
   address: string;
   addressDetail?: string;
   isDefault?: boolean;
+}
+
+/**
+ * 회원탈퇴 요청
+ */
+export interface WithdrawRequest {
+  reason?: string;
+  password: string;
 }
