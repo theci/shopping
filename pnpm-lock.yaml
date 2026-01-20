@@ -145,6 +145,9 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.28.0
         version: 5.91.2(@tanstack/react-query@5.90.16(react@18.3.1))(react@18.3.1)
+      '@tosspayments/tosspayments-sdk':
+        specifier: ^2.3.0
+        version: 2.5.0
       axios:
         specifier: ^1.6.0
         version: 1.13.2
@@ -1537,6 +1540,9 @@ packages:
   '@tanstack/table-core@8.21.3':
     resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
     engines: {node: '>=12'}
+
+  '@tosspayments/tosspayments-sdk@2.5.0':
+    resolution: {integrity: sha512-qapms+cTY5/4MBwcEegG1GkYBIWVjWv77yWnG2+CWXqdZOtGKLmqt0pb1lbrevBOF/uhO1f2Wtj+r/bggHwiHQ==}
 
   '@tybys/wasm-util@0.10.1':
     resolution: {integrity: sha512-9tTaPJLSiejZKx+Bmog4uSubteqTvFrVrURwkmHixBo0G4seD0zUxp98E1DzUBJxLQ3NPwXrGKDiVjwx/DpPsg==}
@@ -7545,6 +7551,8 @@ snapshots:
       react-dom: 18.3.1(react@18.3.1)
 
   '@tanstack/table-core@8.21.3': {}
+
+  '@tosspayments/tosspayments-sdk@2.5.0': {}
 
   '@tybys/wasm-util@0.10.1':
     dependencies:
