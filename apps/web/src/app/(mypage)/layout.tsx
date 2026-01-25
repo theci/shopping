@@ -3,7 +3,7 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { User, MapPin, Lock, Package, LogOut } from 'lucide-react';
+import { User, MapPin, Lock, Package, LogOut, Tag } from 'lucide-react';
 import { Header } from '@/shared/components/layout/Header';
 import { Footer } from '@/shared/components/layout/Footer';
 import { useAuthStore } from '@/features/auth/store/authStore';
@@ -13,6 +13,7 @@ import { cn } from '@/shared/utils/cn';
 const menuItems = [
   { href: '/mypage', icon: User, label: '내 정보' },
   { href: '/mypage/orders', icon: Package, label: '주문 내역' },
+  { href: '/mypage/coupons', icon: Tag, label: '쿠폰' },
   { href: '/mypage/addresses', icon: MapPin, label: '배송지 관리' },
   { href: '/mypage/password', icon: Lock, label: '비밀번호 변경' },
 ];
