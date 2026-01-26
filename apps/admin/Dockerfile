@@ -28,7 +28,9 @@ COPY tsconfig.json ./
 COPY apps/admin ./apps/admin
 COPY packages ./packages
 
-# Build
+# Build with API URL (NEXT_PUBLIC_ vars are inlined at build time)
+ARG NEXT_PUBLIC_API_URL=http://localhost:8080
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm --filter admin build
 
 # Stage 2: Production image
@@ -36,7 +38,6 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV NEXT_PUBLIC_API_URL=http://backend:8080
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
