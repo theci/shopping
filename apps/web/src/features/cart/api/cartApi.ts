@@ -9,7 +9,7 @@ export const cartApi = {
    * 내 장바구니 조회
    */
   getCart: async (): Promise<Cart> => {
-    const response = await api.get<ApiResponse<Cart>>('/v1/carts/me');
+    const response = await api.get<ApiResponse<Cart>>('/api/v1/carts/me');
     return response.data;
   },
 
@@ -17,7 +17,7 @@ export const cartApi = {
    * 장바구니에 상품 추가
    */
   addItem: async (data: CartItemRequest): Promise<Cart> => {
-    const response = await api.post<ApiResponse<Cart>>('/v1/carts/items', data);
+    const response = await api.post<ApiResponse<Cart>>('/api/v1/carts/items', data);
     return response.data;
   },
 
@@ -43,14 +43,14 @@ export const cartApi = {
    * 선택 상품 삭제
    */
   removeSelectedItems: async (itemIds: number[]): Promise<void> => {
-    await api.post('/v1/carts/items/delete', { itemIds });
+    await api.post('/api/v1/carts/items/delete', { itemIds });
   },
 
   /**
    * 장바구니 비우기
    */
   clearCart: async (): Promise<void> => {
-    await api.delete('/v1/carts/me');
+    await api.delete('/api/v1/carts/me');
   },
 
   /**
@@ -69,7 +69,7 @@ export const cartApi = {
    */
   toggleAllSelection: async (selected: boolean): Promise<Cart> => {
     const response = await api.patch<ApiResponse<Cart>>(
-      '/v1/carts/items/selection',
+      '/api/v1/carts/items/selection',
       { selected }
     );
     return response.data;

@@ -10,7 +10,7 @@ export const productApi = {
    * 상품 목록 조회 (페이징)
    */
   getProducts: async (params: Partial<ProductFilters>): Promise<PageResponse<ProductListItem>> => {
-    const response = await api.get<ApiResponse<PageResponse<ProductListItem>>>('/v1/products', {
+    const response = await api.get<ApiResponse<PageResponse<ProductListItem>>>('/api/v1/products', {
       page: params.page ?? 0,
       size: params.size ?? 20,
       keyword: params.keyword,
@@ -29,7 +29,7 @@ export const productApi = {
    * 상품 검색
    */
   searchProducts: async (params: Partial<ProductFilters>): Promise<PageResponse<ProductListItem>> => {
-    const response = await api.get<ApiResponse<PageResponse<ProductListItem>>>('/v1/products/search', {
+    const response = await api.get<ApiResponse<PageResponse<ProductListItem>>>('/api/v1/products/search', {
       page: params.page ?? 0,
       size: params.size ?? 20,
       keyword: params.keyword,
@@ -55,7 +55,7 @@ export const productApi = {
    * 카테고리 목록 조회
    */
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get<ApiResponse<Category[]>>('/v1/categories');
+    const response = await api.get<ApiResponse<Category[]>>('/api/v1/categories');
     return response.data;
   },
 

@@ -16,7 +16,7 @@ export const orderApi = {
    * 주문 생성
    */
   createOrder: async (data: OrderCreateRequest): Promise<Order> => {
-    const response = await api.post<ApiResponse<Order>>('/v1/orders', data);
+    const response = await api.post<ApiResponse<Order>>('/api/v1/orders', data);
     return response.data;
   },
 
@@ -24,7 +24,7 @@ export const orderApi = {
    * 내 주문 목록 조회
    */
   getOrders: async (params: OrderSearchParams = {}): Promise<PageResponse<Order>> => {
-    const response = await api.get<ApiResponse<PageResponse<Order>>>('/v1/orders/me', { params });
+    const response = await api.get<ApiResponse<PageResponse<Order>>>('/api/v1/orders/me', { params });
     return response.data;
   },
 

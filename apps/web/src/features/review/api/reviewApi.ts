@@ -17,7 +17,7 @@ export const reviewApi = {
    * 리뷰 작성
    */
   createReview: async (data: ReviewCreateRequest): Promise<Review> => {
-    const response = await api.post<ApiResponse<Review>>('/v1/reviews', data);
+    const response = await api.post<ApiResponse<Review>>('/api/v1/reviews', data);
     return response.data;
   },
 
@@ -76,7 +76,7 @@ export const reviewApi = {
    * 내 리뷰 목록 조회
    */
   getMyReviews: async (page = 0, size = 10): Promise<PageResponse<Review>> => {
-    const response = await api.get<ApiResponse<PageResponse<Review>>>('/v1/reviews/me', {
+    const response = await api.get<ApiResponse<PageResponse<Review>>>('/api/v1/reviews/me', {
       page,
       size,
     });
