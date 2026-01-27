@@ -24,9 +24,15 @@ export const useAuthStore = create<AuthStore>()(
         set({ isLoading: true });
         try {
           const response = await authApi.login(data);
+
+          // ADMIN 역할 검증
+          if (response.customer.role !== 'ADMIN') {
+            throw new Error('관리자 권한이 없습니다. 관리자 계정으로 로그인해주세요.');
+          }
+
           tokenManager.setTokens(response.accessToken, response.refreshToken);
           set({
-            admin: response.admin,
+            admin: response.customer,
             isAuthenticated: true,
             isLoading: false,
           });
@@ -57,6 +63,12 @@ export const useAuthStore = create<AuthStore>()(
 
         try {
           const admin = await authApi.getMe();
+          // ADMIN 역할 검증
+          if (admin.role !== 'ADMIN') {
+            tokenManager.clearTokens();
+            set({ isAuthenticated: false, admin: null });
+            return false;
+          }
           set({ admin, isAuthenticated: true });
           return true;
         } catch {
@@ -73,6 +85,12 @@ export const useAuthStore = create<AuthStore>()(
         if (token) {
           try {
             const admin = await authApi.getMe();
+            // ADMIN 역할 검증
+            if (admin.role !== 'ADMIN') {
+              tokenManager.clearTokens();
+              set({ admin: null, isAuthenticated: false, isInitialized: true });
+              return;
+            }
             set({ admin, isAuthenticated: true, isInitialized: true });
           } catch {
             tokenManager.clearTokens();

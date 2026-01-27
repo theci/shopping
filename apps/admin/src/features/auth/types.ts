@@ -7,7 +7,7 @@ export type { ApiResponse } from '@/lib/api/types';
 /**
  * 관리자 역할
  */
-export type AdminRole = 'SUPER_ADMIN' | 'ADMIN' | 'MANAGER';
+export type AdminRole = 'ADMIN' | 'SELLER' | 'CUSTOMER';
 
 /**
  * 관리자 정보
@@ -17,6 +17,9 @@ export interface Admin {
   email: string;
   name: string;
   role: AdminRole;
+  phoneNumber?: string;
+  status?: string;
+  customerLevel?: string;
   createdAt: string;
   lastLoginAt?: string;
 }
@@ -30,12 +33,14 @@ export interface LoginRequest {
 }
 
 /**
- * 로그인 응답
+ * 로그인 응답 (백엔드 구조에 맞춤)
  */
 export interface LoginResponse {
   accessToken: string;
   refreshToken: string;
-  admin: Admin;
+  tokenType: string;
+  expiresIn: number;
+  customer: Admin;
 }
 
 /**
@@ -67,7 +72,7 @@ export interface AuthState {
  * 관리자 역할 정보
  */
 export const ADMIN_ROLE_MAP: Record<AdminRole, { label: string; color: string }> = {
-  SUPER_ADMIN: { label: '최고관리자', color: 'danger' },
-  ADMIN: { label: '관리자', color: 'primary' },
-  MANAGER: { label: '매니저', color: 'info' },
+  ADMIN: { label: '관리자', color: 'danger' },
+  SELLER: { label: '판매자', color: 'primary' },
+  CUSTOMER: { label: '고객', color: 'info' },
 };

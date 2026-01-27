@@ -16,7 +16,7 @@ export const useLogin = () => {
       router.push('/');
     },
     onError: (error: any) => {
-      const message = error.response?.data?.message || '로그인에 실패했습니다.';
+      const message = error.message || error.response?.data?.message || '로그인에 실패했습니다.';
       showToast({ type: 'error', message });
     },
   });

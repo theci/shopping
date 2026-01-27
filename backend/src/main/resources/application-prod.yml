@@ -19,11 +19,15 @@ spring:
     defer-datasource-initialization: true
     hibernate:
       ddl-auto: create-drop
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         format_sql: true
         use_sql_comments: true
+
+  sql:
+    init:
+      mode: always
 
   security:
     user:

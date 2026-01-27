@@ -23,7 +23,7 @@ export function Header({ title, actions }: HeaderProps) {
           {admin && (
             <div className="flex items-center gap-2">
               <span className="text-sm text-gray-600">{admin.name}</span>
-              <Badge variant={admin.role === 'SUPER_ADMIN' ? 'danger' : 'primary'}>
+              <Badge variant={admin.role === 'ADMIN' ? 'danger' : 'primary'}>
                 {ADMIN_ROLE_MAP[admin.role]?.label || admin.role}
               </Badge>
             </div>
