@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Button, Input, Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/shared/components/ui';
+import { Button, Input, Card, CardHeader, CardTitle, CardContent } from '@/shared/components/ui';
 import { useCategories, useCreateProduct, useUpdateProduct } from '../../hooks';
 import { PRODUCT_STATUS_MAP } from '../../types';
 import type { Product, ProductCreateRequest, ProductUpdateRequest, ProductStatus } from '../../types';
@@ -12,7 +12,17 @@ interface ProductFormProps {
   mode: 'create' | 'edit';
 }
 
-type FormData = ProductCreateRequest | ProductUpdateRequest;
+interface FormData {
+  name: string;
+  description: string;
+  price: number;
+  discountPrice: number;
+  stockQuantity: number;
+  status: ProductStatus;
+  categoryId?: number;
+  brand: string;
+  imageUrl: string;
+}
 
 export function ProductForm({ product, mode }: ProductFormProps) {
   const router = useRouter();
@@ -24,10 +34,11 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     name: '',
     description: '',
     price: 0,
-    originalPrice: 0,
+    discountPrice: 0,
     stockQuantity: 0,
     status: 'DRAFT' as ProductStatus,
     categoryId: undefined,
+    brand: '',
     imageUrl: '',
   });
 
@@ -39,11 +50,12 @@ export function ProductForm({ product, mode }: ProductFormProps) {
         name: product.name,
         description: product.description || '',
         price: product.price,
-        originalPrice: product.originalPrice || 0,
+        discountPrice: product.discountPrice || 0,
         stockQuantity: product.stockQuantity,
         status: product.status,
-        categoryId: product.categoryId,
-        imageUrl: product.imageUrl || '',
+        categoryId: product.category?.id,
+        brand: product.brand || '',
+        imageUrl: product.images?.[0]?.imageUrl || '',
       });
     }
   }, [product, mode]);
@@ -71,10 +83,22 @@ export function ProductForm({ product, mode }: ProductFormProps) {
     e.preventDefault();
     if (!validate()) return;
 
+    const submitData: ProductCreateRequest = {
+      name: formData.name,
+      description: formData.description,
+      price: formData.price,
+      discountPrice: formData.discountPrice || undefined,
+      stockQuantity: formData.stockQuantity,
+      status: formData.status,
+      categoryId: formData.categoryId,
+      brand: formData.brand,
+      images: formData.imageUrl ? [{ imageUrl: formData.imageUrl, displayOrder: 1 }] : undefined,
+    };
+
     if (mode === 'create') {
-      createProduct(formData as ProductCreateRequest);
+      createProduct(submitData);
     } else if (product) {
-      updateProduct({ id: product.id, data: formData as ProductUpdateRequest });
+      updateProduct({ id: product.id, data: submitData as ProductUpdateRequest });
     }
   };
 
@@ -129,6 +153,15 @@ export function ProductForm({ product, mode }: ProductFormProps) {
               </div>
 
               <Input
+                label="브랜드"
+                name="brand"
+                value={formData.brand || ''}
+                onChange={handleChange}
+                placeholder="브랜드명을 입력하세요"
+                disabled={isPending}
+              />
+
+              <Input
                 label="대표 이미지 URL"
                 name="imageUrl"
                 value={formData.imageUrl || ''}
@@ -147,7 +180,7 @@ export function ProductForm({ product, mode }: ProductFormProps) {
               <div className="grid grid-cols-2 gap-4">
                 <Input
                   type="number"
-                  label="판매가"
+                  label="정가"
                   name="price"
                   value={formData.price || ''}
                   onChange={handleChange}
@@ -157,12 +190,12 @@ export function ProductForm({ product, mode }: ProductFormProps) {
                 />
                 <Input
                   type="number"
-                  label="정가 (선택)"
-                  name="originalPrice"
-                  value={formData.originalPrice || ''}
+                  label="할인가 (선택)"
+                  name="discountPrice"
+                  value={formData.discountPrice || ''}
                   onChange={handleChange}
                   placeholder="0"
-                  helperText="할인 전 가격 (판매가보다 높아야 함)"
+                  helperText="할인 적용 시 판매될 가격"
                   disabled={isPending}
                 />
               </div>

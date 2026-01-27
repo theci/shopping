@@ -15,46 +15,57 @@ export type ProductStatus = 'DRAFT' | 'ACTIVE' | 'INACTIVE' | 'OUT_OF_STOCK';
 export interface Category {
   id: number;
   name: string;
-  slug: string;
   parentId?: number;
+  displayOrder?: number;
   children?: Category[];
 }
 
 /**
- * 상품 목록 아이템
+ * 상품 이미지
+ */
+export interface ProductImage {
+  id: number;
+  imageUrl: string;
+  displayOrder: number;
+}
+
+/**
+ * 상품 옵션
+ */
+export interface ProductOption {
+  id: number;
+  optionName: string;
+  optionValue: string;
+  additionalPrice: number;
+}
+
+/**
+ * 상품 목록 아이템 (백엔드 응답에 맞춤)
  */
 export interface ProductListItem {
   id: number;
   name: string;
+  description?: string;
   price: number;
-  originalPrice?: number;
+  discountPrice?: number | null;
+  discountRate?: number;
   stockQuantity: number;
   status: ProductStatus;
-  categoryId?: number;
-  categoryName?: string;
-  imageUrl?: string;
+  brand?: string;
+  viewCount?: number;
+  salesCount?: number;
+  category?: Category;
+  images?: ProductImage[];
+  options?: ProductOption[];
   createdAt: string;
   updatedAt?: string;
+  publishedAt?: string | null;
 }
 
 /**
  * 상품 상세
  */
-export interface Product {
-  id: number;
-  name: string;
-  description?: string;
-  price: number;
-  originalPrice?: number;
-  stockQuantity: number;
-  status: ProductStatus;
-  categoryId?: number;
-  categoryName?: string;
-  imageUrl?: string;
-  images?: string[];
-  createdAt: string;
-  updatedAt?: string;
-}
+export interface Product extends ProductListItem {}
 
 /**
  * 상품 생성 요청
@@ -63,12 +74,12 @@ export interface ProductCreateRequest {
   name: string;
   description?: string;
   price: number;
-  originalPrice?: number;
+  discountPrice?: number;
   stockQuantity: number;
   status?: ProductStatus;
   categoryId?: number;
-  imageUrl?: string;
-  images?: string[];
+  brand?: string;
+  images?: { imageUrl: string; displayOrder: number }[];
 }
 
 /**
@@ -78,12 +89,11 @@ export interface ProductUpdateRequest {
   name?: string;
   description?: string;
   price?: number;
-  originalPrice?: number;
+  discountPrice?: number;
   stockQuantity?: number;
   status?: ProductStatus;
   categoryId?: number;
-  imageUrl?: string;
-  images?: string[];
+  brand?: string;
 }
 
 /**

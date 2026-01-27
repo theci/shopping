@@ -21,7 +21,7 @@ export const productManagementApi = {
    */
   getProducts: async (params?: ProductSearchParams): Promise<PageResponse<ProductListItem>> => {
     const response = await api.get<ApiResponse<PageResponse<ProductListItem>>>(
-      '/api/v1/admin/products',
+      '/api/v1/products',
       params
     );
     return response.data;
@@ -31,7 +31,7 @@ export const productManagementApi = {
    * 상품 상세 조회
    */
   getProduct: async (id: number): Promise<Product> => {
-    const response = await api.get<ApiResponse<Product>>(`/api/v1/admin/products/${id}`);
+    const response = await api.get<ApiResponse<Product>>(`/api/v1/products/${id}`);
     return response.data;
   },
 
@@ -39,7 +39,7 @@ export const productManagementApi = {
    * 상품 생성
    */
   createProduct: async (data: ProductCreateRequest): Promise<Product> => {
-    const response = await api.post<ApiResponse<Product>>('/api/v1/admin/products', data);
+    const response = await api.post<ApiResponse<Product>>('/api/v1/products', data);
     return response.data;
   },
 
@@ -47,7 +47,7 @@ export const productManagementApi = {
    * 상품 수정
    */
   updateProduct: async (id: number, data: ProductUpdateRequest): Promise<Product> => {
-    const response = await api.put<ApiResponse<Product>>(`/api/v1/admin/products/${id}`, data);
+    const response = await api.put<ApiResponse<Product>>(`/api/v1/products/${id}`, data);
     return response.data;
   },
 
@@ -55,7 +55,7 @@ export const productManagementApi = {
    * 상품 삭제
    */
   deleteProduct: async (id: number): Promise<void> => {
-    await api.delete(`/api/v1/admin/products/${id}`);
+    await api.delete(`/api/v1/products/${id}`);
   },
 
   /**
@@ -63,7 +63,7 @@ export const productManagementApi = {
    */
   updateProductStatus: async (id: number, status: string): Promise<Product> => {
     const response = await api.patch<ApiResponse<Product>>(
-      `/api/v1/admin/products/${id}/status`,
+      `/api/v1/products/${id}/status`,
       { status }
     );
     return response.data;
@@ -74,7 +74,7 @@ export const productManagementApi = {
    */
   updateStock: async (id: number, data: StockUpdateRequest): Promise<Product> => {
     const response = await api.patch<ApiResponse<Product>>(
-      `/api/v1/admin/products/${id}/stock`,
+      `/api/v1/products/${id}/stock`,
       data
     );
     return response.data;
@@ -84,7 +84,7 @@ export const productManagementApi = {
    * 카테고리 목록 조회
    */
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get<ApiResponse<Category[]>>('/api/v1/admin/categories');
+    const response = await api.get<ApiResponse<Category[]>>('/api/v1/categories');
     return response.data;
   },
 };

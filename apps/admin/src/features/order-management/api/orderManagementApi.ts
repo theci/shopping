@@ -20,7 +20,7 @@ export const orderManagementApi = {
    */
   getOrders: async (params?: OrderSearchParams): Promise<PageResponse<OrderListItem>> => {
     const response = await api.get<ApiResponse<PageResponse<OrderListItem>>>(
-      '/api/v1/admin/orders',
+      '/api/v1/orders',
       params
     );
     return response.data;
@@ -31,7 +31,7 @@ export const orderManagementApi = {
    */
   getOrder: async (orderId: number): Promise<Order> => {
     const response = await api.get<ApiResponse<Order>>(
-      `/api/v1/admin/orders/${orderId}`
+      `/api/v1/orders/${orderId}`
     );
     return response.data;
   },
@@ -44,7 +44,7 @@ export const orderManagementApi = {
     data: OrderStatusUpdateRequest
   ): Promise<Order> => {
     const response = await api.patch<ApiResponse<Order>>(
-      `/api/v1/admin/orders/${orderId}/status`,
+      `/api/v1/orders/${orderId}/status`,
       data
     );
     return response.data;
@@ -58,7 +58,7 @@ export const orderManagementApi = {
     data: ShippingUpdateRequest
   ): Promise<Order> => {
     const response = await api.patch<ApiResponse<Order>>(
-      `/api/v1/admin/orders/${orderId}/shipping`,
+      `/api/v1/orders/${orderId}/shipping`,
       data
     );
     return response.data;
@@ -72,7 +72,7 @@ export const orderManagementApi = {
     data: AdminMemoRequest
   ): Promise<Order> => {
     const response = await api.patch<ApiResponse<Order>>(
-      `/api/v1/admin/orders/${orderId}/memo`,
+      `/api/v1/orders/${orderId}/memo`,
       data
     );
     return response.data;

@@ -135,9 +135,9 @@ export function ProductTable({
                     <td className="px-4 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-12 h-12 relative rounded-lg overflow-hidden bg-gray-100 shrink-0">
-                          {product.imageUrl ? (
+                          {product.images && product.images.length > 0 ? (
                             <Image
-                              src={product.imageUrl}
+                              src={product.images[0].imageUrl}
                               alt={product.name}
                               fill
                               className="object-cover"
@@ -157,19 +157,23 @@ export function ProductTable({
                           >
                             {product.name}
                           </Link>
-                          {product.categoryName && (
-                            <p className="text-sm text-gray-500">{product.categoryName}</p>
+                          {product.category && (
+                            <p className="text-sm text-gray-500">{product.category.name}</p>
                           )}
                         </div>
                       </div>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm">
-                        <p className="font-medium text-gray-900">{formatPrice(product.price)}</p>
-                        {product.originalPrice && product.originalPrice > product.price && (
-                          <p className="text-gray-400 line-through text-xs">
-                            {formatPrice(product.originalPrice)}
-                          </p>
+                        {product.discountPrice ? (
+                          <>
+                            <p className="font-medium text-gray-900">{formatPrice(product.discountPrice)}</p>
+                            <p className="text-gray-400 line-through text-xs">
+                              {formatPrice(product.price)}
+                            </p>
+                          </>
+                        ) : (
+                          <p className="font-medium text-gray-900">{formatPrice(product.price)}</p>
                         )}
                       </div>
                     </td>

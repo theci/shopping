@@ -19,7 +19,7 @@ export const customerManagementApi = {
    */
   getCustomers: async (params?: CustomerSearchParams): Promise<PageResponse<CustomerListItem>> => {
     const response = await api.get<ApiResponse<PageResponse<CustomerListItem>>>(
-      '/api/v1/admin/customers',
+      '/api/v1/customers',
       params
     );
     return response.data;
@@ -30,7 +30,7 @@ export const customerManagementApi = {
    */
   getCustomer: async (customerId: number): Promise<Customer> => {
     const response = await api.get<ApiResponse<Customer>>(
-      `/api/v1/admin/customers/${customerId}`
+      `/api/v1/customers/${customerId}`
     );
     return response.data;
   },
@@ -43,7 +43,7 @@ export const customerManagementApi = {
     params?: { page?: number; size?: number }
   ): Promise<PageResponse<CustomerOrder>> => {
     const response = await api.get<ApiResponse<PageResponse<CustomerOrder>>>(
-      `/api/v1/admin/customers/${customerId}/orders`,
+      `/api/v1/customers/${customerId}/orders`,
       params
     );
     return response.data;
@@ -57,7 +57,7 @@ export const customerManagementApi = {
     data: CustomerStatusUpdateRequest
   ): Promise<Customer> => {
     const response = await api.patch<ApiResponse<Customer>>(
-      `/api/v1/admin/customers/${customerId}/status`,
+      `/api/v1/customers/${customerId}/status`,
       data
     );
     return response.data;
