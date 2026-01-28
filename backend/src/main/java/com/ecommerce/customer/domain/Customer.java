@@ -216,6 +216,16 @@ public class Customer extends AggregateRoot {
     }
 
     /**
+     * 관리자에 의한 상태 변경
+     */
+    public void updateStatusByAdmin(CustomerStatus newStatus) {
+        if (this.status == CustomerStatus.WITHDRAWN && newStatus != CustomerStatus.WITHDRAWN) {
+            throw new IllegalStateException("탈퇴한 회원의 상태는 변경할 수 없습니다.");
+        }
+        this.status = newStatus;
+    }
+
+    /**
      * 마지막 로그인 시간 업데이트
      */
     public void updateLastLoginAt() {

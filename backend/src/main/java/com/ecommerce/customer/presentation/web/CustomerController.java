@@ -3,7 +3,9 @@ package com.ecommerce.customer.presentation.web;
 import com.ecommerce.customer.application.CustomerService;
 import com.ecommerce.customer.dto.*;
 import com.ecommerce.customer.infrastructure.security.CustomUserPrincipal;
+import com.ecommerce.order.dto.AdminOrderListResponse;
 import com.ecommerce.shared.dto.ApiResponse;
+import com.ecommerce.shared.dto.PageResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -20,6 +22,57 @@ import org.springframework.web.bind.annotation.*;
 public class CustomerController {
 
     private final CustomerService customerService;
+
+    // ========== Admin API ==========
+
+    /**
+     * 전체 고객 목록 조회 (Admin)
+     * GET /api/v1/customers
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<AdminCustomerListResponse>>> getAllCustomers(
+            @ModelAttribute AdminCustomerSearchRequest request) {
+        PageResponse<AdminCustomerListResponse> response = customerService.getAllCustomers(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 고객 상세 조회 (Admin)
+     * GET /api/v1/customers/{customerId}
+     */
+    @GetMapping("/{customerId}")
+    public ResponseEntity<ApiResponse<AdminCustomerResponse>> getCustomerForAdmin(
+            @PathVariable Long customerId) {
+        AdminCustomerResponse response = customerService.getCustomerForAdmin(customerId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 고객별 주문 목록 조회 (Admin)
+     * GET /api/v1/customers/{customerId}/orders
+     */
+    @GetMapping("/{customerId}/orders")
+    public ResponseEntity<ApiResponse<PageResponse<AdminOrderListResponse>>> getCustomerOrders(
+            @PathVariable Long customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        PageResponse<AdminOrderListResponse> response = customerService.getCustomerOrders(customerId, page, size);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 고객 상태 변경 (Admin)
+     * PATCH /api/v1/customers/{customerId}/status
+     */
+    @PatchMapping("/{customerId}/status")
+    public ResponseEntity<ApiResponse<AdminCustomerResponse>> updateCustomerStatus(
+            @PathVariable Long customerId,
+            @Valid @RequestBody CustomerStatusUpdateRequest request) {
+        AdminCustomerResponse response = customerService.updateCustomerStatus(customerId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "고객 상태가 변경되었습니다."));
+    }
+
+    // ========== 일반 사용자 API ==========
 
     /**
      * 내 정보 조회

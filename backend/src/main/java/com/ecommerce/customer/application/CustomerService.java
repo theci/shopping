@@ -6,9 +6,16 @@ import com.ecommerce.customer.domain.CustomerRepository;
 import com.ecommerce.customer.dto.*;
 import com.ecommerce.customer.exception.CustomerNotFoundException;
 import com.ecommerce.customer.exception.DuplicateEmailException;
+import com.ecommerce.order.domain.Order;
+import com.ecommerce.order.domain.OrderRepository;
+import com.ecommerce.order.dto.AdminOrderListResponse;
+import com.ecommerce.shared.dto.PageResponse;
 import com.ecommerce.shared.infrastructure.DomainEventPublisher;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +30,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomerService {
 
     private final CustomerRepository customerRepository;
+    private final OrderRepository orderRepository;
     private final CustomerMapper customerMapper;
     private final PasswordEncoder passwordEncoder;
     private final DomainEventPublisher domainEventPublisher;
@@ -178,5 +186,86 @@ public class CustomerService {
     private Customer findCustomerById(Long customerId) {
         return customerRepository.findById(customerId)
                 .orElseThrow(() -> new CustomerNotFoundException(customerId));
+    }
+
+    // ========== Admin 전용 메서드 ==========
+
+    /**
+     * 전체 고객 목록 조회 (Admin)
+     */
+    public PageResponse<AdminCustomerListResponse> getAllCustomers(AdminCustomerSearchRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+
+        Page<Customer> customerPage;
+        if (request.getKeyword() != null || request.getStatus() != null) {
+            customerPage = customerRepository.searchCustomers(
+                    request.getKeyword(),
+                    request.getStatus(),
+                    pageable);
+        } else {
+            customerPage = customerRepository.findAll(pageable);
+        }
+
+        Page<AdminCustomerListResponse> responsePage = customerPage.map(customer -> {
+            int orderCount = (int) orderRepository.findByCustomerId(customer.getId(), PageRequest.of(0, 1)).getTotalElements();
+            return customerMapper.toAdminListResponse(customer, orderCount);
+        });
+
+        return PageResponse.of(responsePage);
+    }
+
+    /**
+     * 고객 상세 조회 (Admin)
+     */
+    public AdminCustomerResponse getCustomerForAdmin(Long customerId) {
+        Customer customer = customerRepository.findByIdWithAddresses(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException(customerId));
+
+        int orderCount = (int) orderRepository.findByCustomerId(customerId, PageRequest.of(0, 1)).getTotalElements();
+        return customerMapper.toAdminResponse(customer, orderCount);
+    }
+
+    /**
+     * 고객별 주문 목록 조회 (Admin)
+     */
+    public PageResponse<AdminOrderListResponse> getCustomerOrders(Long customerId, int page, int size) {
+        Customer customer = customerRepository.findById(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException(customerId));
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Order> orderPage = orderRepository.findByCustomerId(customerId, pageable);
+
+        Page<AdminOrderListResponse> responsePage = orderPage.map(order ->
+                AdminOrderListResponse.builder()
+                        .id(order.getId())
+                        .orderNumber(order.getOrderNumber())
+                        .customerName(customer.getName())
+                        .customerEmail(customer.getEmail())
+                        .status(order.getOrderStatus())
+                        .totalAmount(order.getTotalAmount())
+                        .itemCount(order.getItemCount())
+                        .paymentMethod(null)
+                        .createdAt(order.getCreatedAt())
+                        .build()
+        );
+
+        return PageResponse.of(responsePage);
+    }
+
+    /**
+     * 고객 상태 변경 (Admin)
+     */
+    @Transactional
+    public AdminCustomerResponse updateCustomerStatus(Long customerId, CustomerStatusUpdateRequest request) {
+        Customer customer = customerRepository.findByIdWithAddresses(customerId)
+                .orElseThrow(() -> new CustomerNotFoundException(customerId));
+
+        customer.updateStatusByAdmin(request.getStatus());
+
+        Customer savedCustomer = customerRepository.save(customer);
+        log.info("Admin 고객 상태 변경: customerId={}, newStatus={}", customerId, request.getStatus());
+
+        int orderCount = (int) orderRepository.findByCustomerId(customerId, PageRequest.of(0, 1)).getTotalElements();
+        return customerMapper.toAdminResponse(savedCustomer, orderCount);
     }
 }

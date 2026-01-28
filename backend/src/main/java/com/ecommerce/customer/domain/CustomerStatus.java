@@ -5,7 +5,8 @@ package com.ecommerce.customer.domain;
  */
 public enum CustomerStatus {
     ACTIVE("활성"),
-    INACTIVE("비활성"),
+    INACTIVE("휴면"),
+    SUSPENDED("정지"),
     BLOCKED("차단"),
     WITHDRAWN("탈퇴");
 
