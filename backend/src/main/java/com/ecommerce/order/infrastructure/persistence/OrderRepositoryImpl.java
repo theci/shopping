@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 /**
@@ -30,6 +31,11 @@ public class OrderRepositoryImpl implements OrderRepository {
     }
 
     @Override
+    public Optional<Order> findByIdWithItems(Long id) {
+        return jpaOrderRepository.findByIdWithItems(id);
+    }
+
+    @Override
     public Optional<Order> findByOrderNumber(String orderNumber) {
         return jpaOrderRepository.findByOrderNumberWithItems(orderNumber);
     }
@@ -47,5 +53,21 @@ public class OrderRepositoryImpl implements OrderRepository {
     @Override
     public boolean existsByOrderNumber(String orderNumber) {
         return jpaOrderRepository.existsByOrderNumber(orderNumber);
+    }
+
+    // Admin용 메서드
+    @Override
+    public Page<Order> findAll(Pageable pageable) {
+        return jpaOrderRepository.findAllByOrderByCreatedAtDesc(pageable);
+    }
+
+    @Override
+    public Page<Order> findByOrderStatus(OrderStatus status, Pageable pageable) {
+        return jpaOrderRepository.findByOrderStatusOrderByCreatedAtDesc(status, pageable);
+    }
+
+    @Override
+    public Page<Order> searchOrders(String keyword, OrderStatus status, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        return jpaOrderRepository.searchOrders(keyword, status, startDate, endDate, pageable);
     }
 }

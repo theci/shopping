@@ -4,6 +4,8 @@ import com.ecommerce.cart.domain.Cart;
 import com.ecommerce.cart.domain.CartItem;
 import com.ecommerce.cart.domain.CartRepository;
 import com.ecommerce.cart.exception.CartNotFoundException;
+import com.ecommerce.customer.domain.Customer;
+import com.ecommerce.customer.domain.CustomerRepository;
 import com.ecommerce.order.domain.Order;
 import com.ecommerce.order.domain.OrderRepository;
 import com.ecommerce.order.domain.OrderStatus;
@@ -23,6 +25,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalTime;
+
 
 /**
  * Order Service
@@ -36,6 +40,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final CartRepository cartRepository;
     private final ProductRepository productRepository;
+    private final CustomerRepository customerRepository;
     private final OrderMapper orderMapper;
     private final DomainEventPublisher domainEventPublisher;
 
@@ -217,5 +222,111 @@ public class OrderService {
         log.info("구매 확정: orderId={}", orderId);
 
         return orderMapper.toResponse(savedOrder);
+    }
+
+    // ========== Admin 전용 메서드 ==========
+
+    /**
+     * 전체 주문 목록 조회 (Admin)
+     */
+    public PageResponse<AdminOrderListResponse> getAllOrders(AdminOrderSearchRequest request) {
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize());
+
+        Page<Order> orderPage;
+        if (request.getKeyword() != null || request.getStatus() != null ||
+            request.getStartDate() != null || request.getEndDate() != null) {
+            orderPage = orderRepository.searchOrders(
+                    request.getKeyword(),
+                    request.getStatus(),
+                    request.getStartDate() != null ? request.getStartDate().atStartOfDay() : null,
+                    request.getEndDate() != null ? request.getEndDate().atTime(LocalTime.MAX) : null,
+                    pageable);
+        } else {
+            orderPage = orderRepository.findAll(pageable);
+        }
+
+        Page<AdminOrderListResponse> responsePage = orderPage.map(order -> {
+            Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+            return orderMapper.toAdminListResponse(order, customer);
+        });
+
+        return PageResponse.of(responsePage);
+    }
+
+    /**
+     * 주문 상세 조회 (Admin)
+     */
+    public AdminOrderResponse getOrderForAdmin(Long orderId) {
+        Order order = orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        return orderMapper.toAdminResponse(order, customer);
+    }
+
+    /**
+     * 주문 상태 변경 (Admin)
+     */
+    @Transactional
+    public AdminOrderResponse updateOrderStatus(Long orderId, OrderStatusUpdateRequest request) {
+        Order order = orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        // 취소 처리 시 재고 복구
+        if (request.getStatus() == OrderStatus.CANCELLED &&
+            (order.getOrderStatus() == OrderStatus.CONFIRMED || order.getOrderStatus() == OrderStatus.PREPARING)) {
+            for (var item : order.getItems()) {
+                Product product = productRepository.findById(item.getProductId())
+                        .orElseThrow(() -> new ProductNotFoundException(item.getProductId()));
+                product.increaseStock(item.getQuantity());
+                productRepository.save(product);
+            }
+        }
+
+        order.updateStatusByAdmin(request.getStatus());
+
+        if (request.getStatus() == OrderStatus.CANCELLED && request.getReason() != null) {
+            order.cancel(request.getReason());
+        }
+
+        Order savedOrder = orderRepository.save(order);
+        log.info("Admin 주문 상태 변경: orderId={}, newStatus={}", orderId, request.getStatus());
+
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        return orderMapper.toAdminResponse(savedOrder, customer);
+    }
+
+    /**
+     * 배송 정보 업데이트 (Admin)
+     */
+    @Transactional
+    public AdminOrderResponse updateShipping(Long orderId, ShippingUpdateRequest request) {
+        Order order = orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        order.updateShippingInfo(request.getTrackingNumber(), request.getTrackingCompany());
+
+        Order savedOrder = orderRepository.save(order);
+        log.info("Admin 배송 정보 업데이트: orderId={}, trackingNumber={}", orderId, request.getTrackingNumber());
+
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        return orderMapper.toAdminResponse(savedOrder, customer);
+    }
+
+    /**
+     * 관리자 메모 업데이트 (Admin)
+     */
+    @Transactional
+    public AdminOrderResponse updateAdminMemo(Long orderId, AdminMemoRequest request) {
+        Order order = orderRepository.findByIdWithItems(orderId)
+                .orElseThrow(() -> new OrderNotFoundException(orderId));
+
+        order.updateAdminMemo(request.getMemo());
+
+        Order savedOrder = orderRepository.save(order);
+        log.info("Admin 메모 업데이트: orderId={}", orderId);
+
+        Customer customer = customerRepository.findById(order.getCustomerId()).orElse(null);
+        return orderMapper.toAdminResponse(savedOrder, customer);
     }
 }

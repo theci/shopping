@@ -73,6 +73,17 @@ public class Order extends AggregateRoot {
     // 완료 정보
     private LocalDateTime completedAt;
 
+    // 배송 추적 정보
+    @Column(length = 50)
+    private String trackingNumber;
+
+    @Column(length = 50)
+    private String trackingCompany;
+
+    // 관리자 메모
+    @Column(length = 1000)
+    private String adminMemo;
+
     @Builder
     public Order(Long customerId, String recipientName, String recipientPhone,
                  String shippingPostalCode, String shippingAddress,
@@ -244,5 +255,34 @@ public class Order extends AggregateRoot {
      */
     public boolean isCompleted() {
         return this.orderStatus == OrderStatus.COMPLETED;
+    }
+
+    // ========== Admin 전용 메서드 ==========
+
+    /**
+     * 관리자에 의한 주문 상태 변경
+     */
+    public void updateStatusByAdmin(OrderStatus newStatus) {
+        this.orderStatus = newStatus;
+    }
+
+    /**
+     * 배송 정보 업데이트 (관리자)
+     */
+    public void updateShippingInfo(String trackingNumber, String trackingCompany) {
+        this.trackingNumber = trackingNumber;
+        this.trackingCompany = trackingCompany;
+
+        // 배송 정보 입력 시 배송중 상태로 변경
+        if (this.orderStatus == OrderStatus.PREPARING || this.orderStatus == OrderStatus.CONFIRMED) {
+            this.orderStatus = OrderStatus.SHIPPED;
+        }
+    }
+
+    /**
+     * 관리자 메모 업데이트
+     */
+    public void updateAdminMemo(String memo) {
+        this.adminMemo = memo;
     }
 }

@@ -10,12 +10,14 @@ export type { ApiResponse, PageResponse } from '@/lib/api/types';
 export type OrderStatus =
   | 'PENDING'
   | 'PAID'
+  | 'CONFIRMED'
   | 'PREPARING'
   | 'SHIPPED'
   | 'DELIVERED'
-  | 'CONFIRMED'
+  | 'COMPLETED'
   | 'CANCELLED'
-  | 'REFUNDED';
+  | 'REFUNDED'
+  | 'RETURNED';
 
 /**
  * 결제 수단
@@ -147,12 +149,14 @@ export const ORDER_STATUS_MAP: Record<
 > = {
   PENDING: { label: '주문 대기', variant: 'default' },
   PAID: { label: '결제 완료', variant: 'info' },
+  CONFIRMED: { label: '주문 확인', variant: 'info' },
   PREPARING: { label: '상품 준비중', variant: 'warning' },
   SHIPPED: { label: '배송중', variant: 'info' },
   DELIVERED: { label: '배송 완료', variant: 'success' },
-  CONFIRMED: { label: '구매 확정', variant: 'success' },
+  COMPLETED: { label: '구매 확정', variant: 'success' },
   CANCELLED: { label: '주문 취소', variant: 'danger' },
   REFUNDED: { label: '환불 완료', variant: 'danger' },
+  RETURNED: { label: '반품', variant: 'danger' },
 };
 
 /**

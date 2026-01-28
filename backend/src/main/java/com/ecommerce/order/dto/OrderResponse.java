@@ -41,6 +41,13 @@ public class OrderResponse {
     // 완료 정보
     private LocalDateTime completedAt;
 
+    // 배송 추적 정보
+    private String trackingNumber;
+    private String trackingCompany;
+
+    // 관리자 메모
+    private String adminMemo;
+
     private int itemCount;
     private int totalQuantity;
     private LocalDateTime createdAt;

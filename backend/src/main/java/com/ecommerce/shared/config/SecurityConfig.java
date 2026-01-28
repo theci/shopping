@@ -49,6 +49,19 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/products/**").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/categories/**").permitAll()
 
+                // Admin API - 주문 관리 (임시로 permitAll, 실제 운영 시 ADMIN 권한 체크 필요)
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/orders/{orderId}").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/status").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/shipping").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/orders/*/memo").permitAll()
+
+                // Admin API - 고객 관리 (임시로 permitAll, 실제 운영 시 ADMIN 권한 체크 필요)
+                .requestMatchers(HttpMethod.GET, "/api/v1/customers").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/customers/{customerId}").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/customers/*/orders").permitAll()
+                .requestMatchers(HttpMethod.PATCH, "/api/v1/customers/*/status").permitAll()
+
                 // 그 외 요청은 인증 필요
                 .anyRequest().authenticated()
             )

@@ -22,6 +22,68 @@ public class OrderController {
 
     private final OrderService orderService;
 
+    // ========== Admin API ==========
+
+    /**
+     * 전체 주문 목록 조회 (Admin)
+     * GET /api/v1/orders
+     */
+    @GetMapping
+    public ResponseEntity<ApiResponse<PageResponse<AdminOrderListResponse>>> getAllOrders(
+            @ModelAttribute AdminOrderSearchRequest request) {
+        PageResponse<AdminOrderListResponse> response = orderService.getAllOrders(request);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 주문 상세 조회 (Admin)
+     * GET /api/v1/orders/{orderId}
+     */
+    @GetMapping("/{orderId}")
+    public ResponseEntity<ApiResponse<AdminOrderResponse>> getOrderForAdmin(
+            @PathVariable Long orderId) {
+        AdminOrderResponse response = orderService.getOrderForAdmin(orderId);
+        return ResponseEntity.ok(ApiResponse.success(response));
+    }
+
+    /**
+     * 주문 상태 변경 (Admin)
+     * PATCH /api/v1/orders/{orderId}/status
+     */
+    @PatchMapping("/{orderId}/status")
+    public ResponseEntity<ApiResponse<AdminOrderResponse>> updateOrderStatus(
+            @PathVariable Long orderId,
+            @Valid @RequestBody OrderStatusUpdateRequest request) {
+        AdminOrderResponse response = orderService.updateOrderStatus(orderId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "주문 상태가 변경되었습니다."));
+    }
+
+    /**
+     * 배송 정보 입력 (Admin)
+     * PATCH /api/v1/orders/{orderId}/shipping
+     */
+    @PatchMapping("/{orderId}/shipping")
+    public ResponseEntity<ApiResponse<AdminOrderResponse>> updateShipping(
+            @PathVariable Long orderId,
+            @Valid @RequestBody ShippingUpdateRequest request) {
+        AdminOrderResponse response = orderService.updateShipping(orderId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "배송 정보가 입력되었습니다."));
+    }
+
+    /**
+     * 관리자 메모 저장 (Admin)
+     * PATCH /api/v1/orders/{orderId}/memo
+     */
+    @PatchMapping("/{orderId}/memo")
+    public ResponseEntity<ApiResponse<AdminOrderResponse>> updateAdminMemo(
+            @PathVariable Long orderId,
+            @RequestBody AdminMemoRequest request) {
+        AdminOrderResponse response = orderService.updateAdminMemo(orderId, request);
+        return ResponseEntity.ok(ApiResponse.success(response, "메모가 저장되었습니다."));
+    }
+
+    // ========== 일반 사용자 API ==========
+
     /**
      * 주문 생성 (장바구니에서 주문)
      * POST /api/v1/orders
@@ -48,11 +110,11 @@ public class OrderController {
     }
 
     /**
-     * 주문 상세 조회
-     * GET /api/v1/orders/{orderId}
+     * 내 주문 상세 조회
+     * GET /api/v1/orders/me/{orderId}
      */
-    @GetMapping("/{orderId}")
-    public ResponseEntity<ApiResponse<OrderResponse>> getOrder(
+    @GetMapping("/me/{orderId}")
+    public ResponseEntity<ApiResponse<OrderResponse>> getMyOrder(
             @AuthenticationPrincipal CustomUserPrincipal principal,
             @PathVariable Long orderId) {
         OrderResponse response = orderService.getOrder(principal.getCustomerId(), orderId);
