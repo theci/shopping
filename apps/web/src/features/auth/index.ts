@@ -8,7 +8,7 @@ export { useAuthStore } from './store';
 export { useLogin, useRegister, useLogout, useAuth, useRequireAuth } from './hooks';
 
 // Components
-export { LoginForm, RegisterForm, ProtectedRoute, GuestRoute } from './components';
+export { LoginForm, RegisterForm, ProtectedRoute, GuestRoute, SocialLoginButtons } from './components';
 
 // Types
 export type {

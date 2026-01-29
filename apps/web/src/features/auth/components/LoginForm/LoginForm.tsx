@@ -6,6 +6,7 @@ import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button, Input } from '@/shared/components/ui';
 import { useLogin } from '../../hooks';
 import { isValidEmail } from '@/shared/utils/validation';
+import { SocialLoginButtons } from '../SocialLoginButtons';
 
 interface FormData {
   email: string;
@@ -108,6 +109,8 @@ export function LoginForm() {
       <Button type="submit" fullWidth isLoading={isPending} size="lg">
         로그인
       </Button>
+
+      <SocialLoginButtons className="mt-6" />
 
       <div className="text-center text-sm text-gray-600">
         아직 계정이 없으신가요?{' '}

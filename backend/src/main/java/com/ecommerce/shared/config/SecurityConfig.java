@@ -1,5 +1,8 @@
 package com.ecommerce.shared.config;
 
+import com.ecommerce.customer.infrastructure.oauth2.CustomOAuth2UserService;
+import com.ecommerce.customer.infrastructure.oauth2.OAuth2AuthenticationFailureHandler;
+import com.ecommerce.customer.infrastructure.oauth2.OAuth2AuthenticationSuccessHandler;
 import com.ecommerce.customer.infrastructure.security.JwtAuthenticationFilter;
 import com.ecommerce.customer.infrastructure.security.JwtTokenProvider;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +33,18 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenProvider jwtTokenProvider;
+    private final CustomOAuth2UserService customOAuth2UserService;
+    private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
+    private final OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
             .csrf(csrf -> csrf.disable())
+            // OAuth2는 세션이 필요하므로 IF_REQUIRED로 변경
             .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
             .authorizeHttpRequests(auth -> auth
                 // 인증 없이 접근 가능한 엔드포인트
                 .requestMatchers("/api/v1/auth/**").permitAll()
@@ -62,8 +69,25 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/v1/customers/*/orders").permitAll()
                 .requestMatchers(HttpMethod.PATCH, "/api/v1/customers/*/status").permitAll()
 
+                // OAuth2 로그인 엔드포인트
+                .requestMatchers("/oauth2/**", "/login/**").permitAll()
+
                 // 그 외 요청은 인증 필요
                 .anyRequest().authenticated()
+            )
+            // OAuth2 로그인 설정
+            .oauth2Login(oauth2 -> oauth2
+                .authorizationEndpoint(authorization -> authorization
+                    .baseUri("/oauth2/authorization")
+                )
+                .redirectionEndpoint(redirection -> redirection
+                    .baseUri("/login/oauth2/code/*")
+                )
+                .userInfoEndpoint(userInfo -> userInfo
+                    .userService(customOAuth2UserService)
+                )
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
             )
             .addFilterBefore(jwtAuthenticationFilter(), UsernamePasswordAuthenticationFilter.class)
             // H2 콘솔을 위한 설정
@@ -113,8 +137,8 @@ public class SecurityConfig {
         ));
         
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
-        
+        source.registerCorsConfiguration("/**", configuration);
+
         return source;
     }
 

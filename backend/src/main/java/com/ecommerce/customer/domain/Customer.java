@@ -62,8 +62,15 @@ public class Customer extends AggregateRoot {
 
     private String withdrawnReason;
 
+    @Enumerated(EnumType.STRING)
+    @Column(length = 20)
+    private OAuthProvider oauthProvider = OAuthProvider.LOCAL;
+
+    private String oauthProviderId;
+
     @Builder
-    public Customer(String email, String password, String name, String phoneNumber, CustomerRole role) {
+    public Customer(String email, String password, String name, String phoneNumber, CustomerRole role,
+                    OAuthProvider oauthProvider, String oauthProviderId) {
         this.email = email;
         this.password = password;
         this.name = name;
@@ -72,6 +79,8 @@ public class Customer extends AggregateRoot {
         this.customerLevel = CustomerLevel.BRONZE;
         this.role = role != null ? role : CustomerRole.CUSTOMER;
         this.totalPurchaseAmount = BigDecimal.ZERO;
+        this.oauthProvider = oauthProvider != null ? oauthProvider : OAuthProvider.LOCAL;
+        this.oauthProviderId = oauthProviderId;
     }
 
     // 도메인 메서드
@@ -255,5 +264,20 @@ public class Customer extends AggregateRoot {
                 .filter(Address::isDefault)
                 .findFirst()
                 .orElse(null);
+    }
+
+    /**
+     * OAuth 제공자 연결 (기존 LOCAL 계정에 OAuth 연결)
+     */
+    public void linkOAuthProvider(OAuthProvider provider, String providerId) {
+        this.oauthProvider = provider;
+        this.oauthProviderId = providerId;
+    }
+
+    /**
+     * OAuth 로그인 사용자인지 확인
+     */
+    public boolean isOAuthUser() {
+        return this.oauthProvider != null && this.oauthProvider != OAuthProvider.LOCAL;
     }
 }
